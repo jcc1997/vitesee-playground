@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { useSection } from '../composable';
-import HeaderMain from './HeaderMain.vue';
+// import { useSection } from '../composable'
+import HeaderMain from './HeaderMain.vue'
+import { useHeaderSection, useMainSection } from './sections'
 
-const Section = useSection({})
+// const Section = useSection({})
+
+const HeaderSection = useHeaderSection()
+const MainSection = useMainSection()
 </script>
 
 <template>
-  <header>
+  <!-- <header>
     <Section name="header">
       Default Header
     </Section>
@@ -22,12 +26,28 @@ const Section = useSection({})
         Default Main
       </Section>
     </main>
-  </div>
+  </div> -->
   <HeaderMain />
+  <header>
+    <HeaderSection>
+      Default Header
+    </HeaderSection>
+  </header>
+  <div class="flex">
+    <nav>
+      <Section name="nav">
+        Default Nav
+      </Section>
+    </nav>
+    <main>
+      <MainSection>
+        Default Main
+      </MainSection>
+    </main>
+  </div>
 </template>
 
 <style lang="css">
-
 header, nav, main, footer {
     padding: 20px;
 }

@@ -7,6 +7,6 @@ import Parent from '../components/section/examples/Parent.vue'
 </template>
 
 <route lang="yaml">
-meta:
-  # layout: home
+# meta:
+#   layout: home
 </route>

@@ -1,15 +1,25 @@
-import { createInjectionState } from "@vueuse/core";
-import { defineComponent, shallowReactive, Slot } from "vue-demi"
-// import { camelize } from '@vueuse/shared'
+import { createInjectionState } from '@vueuse/core'
+import type { FunctionalComponent, Slot } from 'vue-demi'
+import { shallowReactive } from 'vue-demi'
+import { camelize } from '@vueuse/shared'
 
-export function useDefineSection(section: string) {
+const [provideContext, injectContext] = createInjectionState(() => {
+  const renderMap = shallowReactive<Record<string, Slot | undefined>>({})
+
+  return {
+    renderMap,
+  }
+})
+
+export function useDefineSection(name: string) {
   const { renderMap } = injectContext()!
 
-  return defineComponent((_, { slots }) => {
-    return () => {
-      renderMap[section] = slots.default
-    }
-  })
+  const DefineSection: FunctionalComponent = (_, { slots }) => {
+    renderMap[name] = slots.default
+    return null
+  }
+
+  return DefineSection
 }
 
 export interface UseSectionOptions {
@@ -26,40 +36,27 @@ export function useSection(options: UseSectionOptions) {
 
   const { inheritAttrs = true } = options
 
-  return defineComponent({
-    props: {
-      name: {
-        type: String,
-        required: true,
-      }
-    },
-    inheritAttrs,
-    setup(props, { attrs, slots }) {
-      return () => {
-        const render = renderMap[props.name]
-        if (!render) {
-          return slots.default?.()
-        }
+  const Section: FunctionalComponent<{ name: string }> = (props, { attrs, slots }) => {
+    const render = renderMap[props.name]
+    if (!render)
+      return slots.default?.()
 
-        const vnode = render({ ...keysToCamelKebabCase(attrs), $slots: slots })
-        return (inheritAttrs && vnode?.length === 1) ? vnode[0] : vnode
-      }
-    }
-  })
-}
-
-const [provideContext, injectContext] = createInjectionState(() => {
-  const renderMap = shallowReactive<Record<string, Slot | undefined>>({})
-
-  return {
-    renderMap
+    const vnode = render({ ...keysToCamelKebabCase(attrs), $slots: slots })
+    return (inheritAttrs && vnode?.length === 1) ? vnode[0] : vnode
   }
-})
+  Section.props = {
+    name: {
+      type: String,
+      required: true,
+    },
+  }
+
+  return Section
+}
 
 function keysToCamelKebabCase(obj: Record<string, any>) {
   const newObj: typeof obj = {}
   for (const key in obj)
-    newObj[key] = obj[key]
-  // newObj[camelize(key)] = obj[key]
+    newObj[camelize(key)] = obj[key]
   return newObj
 }
