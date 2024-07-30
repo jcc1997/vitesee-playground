@@ -58,6 +58,28 @@ update(User, (origin) => ({ firstName: origin.firstName + 'Changed' }), { where:
 ```
 
 ```ts
+const entities: Record<string, Map<string, Modal>> = {}
+
+function dispatchOperation(modal, op) {
+  // ...
+}
+
+function pushMap(map, values)
+function deleteMap(map, values)
+function updateMap(map, values)
+function mapToArray(map)
+
+function create(modal, instances) {
+  // ... check instances id existed
+
+  pushMap(entities[modal.name], instances)
+
+  dispatchOperation(modal, {
+    type: 'create',
+    targets: instances
+  })
+}
+
 function findMany(modal, options) {
 
   const results = ref(filterByOptions(modal.all(), options))
