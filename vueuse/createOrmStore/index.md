@@ -69,6 +69,28 @@ function deleteMap(map, values)
 function updateMap(map, values)
 function mapToArray(map)
 
+/** indexes start */
+class Index<M extends Modal> {
+  constructor(
+    public readonly modal: Constructor<Modal>,
+    public readonly attrs: (keyof M)[],
+  ) {}
+
+  symbols = new Map()
+
+  key(m: Modal): IndexKey {
+    const keys = this.attrs.map(a => `${a}:${m[a]}`).join(',')
+
+    if (!this.symbols.has(keys))
+      this.symbols.set(keys, new Symbol(keys))
+
+    return this.symbols.get(keys)!
+  }
+}
+
+const indexes: Record<string, WeakMap<IndexKey, Modal[]>> = {}
+/** indexes end */
+
 function create(modal, instances) {
   // ... check instances id existed
 
