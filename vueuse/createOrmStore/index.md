@@ -35,6 +35,9 @@ const queryUsers = findMany(User, {
   select: ['firstName', 'lastName'],
   where: { org: { id: searchingOrgId } }
 })
+const user = findFirst(User, {
+  where: { id: '' }
+})
 
 // create
 create(User, [
