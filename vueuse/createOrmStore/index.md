@@ -57,8 +57,10 @@ update(User, { firstName: 'abc' }, { where: { firstName: orm.operator.contain('a
 update(User, (origin) => ({ firstName: origin.firstName + 'Changed' }), { where: { firstName: orm.operator.contain('abc' )} })
 ```
 
+implement
+
 ```ts
-const entities: Record<string, Map<string, Modal>> = {}
+const entities: Record<string, Map<string, ModalData>> = {}
 
 function dispatchOperation(modal, op) {
   // ...
@@ -72,7 +74,7 @@ function mapToArray(map)
 /** indexes start */
 class Index<M extends Modal> {
   constructor(
-    public readonly modal: Constructor<Modal>,
+    public readonly modal: Modal,
     public readonly attrs: (keyof M)[],
   ) {}
 
@@ -88,7 +90,7 @@ class Index<M extends Modal> {
   }
 }
 
-const indexes: Record<string, WeakMap<IndexKey, Modal[]>> = {}
+const indexes: Record<string, WeakMap<IndexKey, ModalData[]>> = {}
 /** indexes end */
 
 function create(modal, instances) {
@@ -104,10 +106,19 @@ function create(modal, instances) {
 
 function findMany(modal, options) {
 
-  const results = ref(filterByOptions(modal.all(), options))
+  const raws = ref(filterByOptions(modal.all(), options))
+
+  /**
+   * in OrgList
+   * {
+   *    users: WeakMap { '{org-id}': [OrgVO] }
+   * }
+   */
+  const relationMap: Record<string, WeakMap<IndexKey, ModalData[]>> = {}
 
   function isRelative(operation) {
     // ...
+    // check where match
   }
 
   const removeListener = addListenerTo(modal, (all, operation) => {
@@ -117,19 +128,51 @@ function findMany(modal, options) {
     if (!isRelative(operation))
       return
 
-    if (relation.type === 'reassign')
-      results.value = filterByOptions(all, options)
-    else if (operation.type === 'create')
-      results.value = utils.addToList(results.value, operation.targets, options)
-    else if (operation.type === 'delete')
-      results.value = utils.delFromList(results.value, operation.targets, options)
-    else if (operation.type === 'update')
-      utils.updateFromList(results.value, operation.targets, options)
+    if (relation.type === 'reassign') {
+      raws.value = filterByOptions(all, options)
+      rebuildRelationMap(all)
+    }
+    else if (operation.type === 'create') {
+      raws.value = utils.addToList(raws.value, operation.targets, options)
+      addRelationMap(operation.targets)
+    }
+    else if (operation.type === 'delete') {
+      raws.value = utils.delFromList(raws.value, operation.targets, options)
+    }
+    else if (operation.type === 'update') {
+      utils.updateFromList(raws.value, operation.targets, options)
+    }
   })
 
   useScopeDispose(removeListener)
 
-  return readonly(results)
+  const targets = reactive<Record<string, Record<string, ModalData>>>()
+  const relations = reactive<Record<string, Record<string, ModalData | ModalData[]>>>({})
+
+  // return readonly(raws)
+  return computed(() => {
+    // 处理联表
+    return raw.map((v) => {
+      // 联表
+      return v
+    })
+  })
+}
+
+function joinRelationMany() {
+  const result = ref<T>()
+
+  const removeListener = addListenerTo(modal, (all, operation) => {
+    // ...
+  })
+
+  useScopeDispose(removeListener)
+
+  return [readonly(result), removeListener]
+}
+
+function joinRelationOne() {
+
 }
 
 function findFirst<T>(modal: Modal<T>, options) {

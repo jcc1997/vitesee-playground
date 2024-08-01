@@ -12,6 +12,17 @@ function go() {
 }
 
 const { t } = useI18n()
+
+const r = ref(1)
+const react = reactive({
+  r,
+})
+
+watch(react, (v) => {
+  // console.log(v)
+})
+
+// console.log(react, r)
 </script>
 
 <template>
